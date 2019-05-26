@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "ntiervnet", "ntiervnet\ntiervnet.deployproj", "{9F278525-45A5-4B6A-8DE3-C10E6C691AA0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9F278525-45A5-4B6A-8DE3-C10E6C691AA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F278525-45A5-4B6A-8DE3-C10E6C691AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F278525-45A5-4B6A-8DE3-C10E6C691AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F278525-45A5-4B6A-8DE3-C10E6C691AA0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D8C167B9-D586-4850-9EA4-F2AB2355A54A}
+	EndGlobalSection
+EndGlobal

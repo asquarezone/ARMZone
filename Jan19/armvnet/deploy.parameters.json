@@ -1,0 +1,19 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkName": {
+            "value": "ntier"
+        },
+        "subnetName":{
+            "value": "web"
+        },
+        "networkAdressPrefixes":{
+            "value": ["192.168.0.0/16"]
+        },
+        "subnetAddressPrefix":{
+            "value": "192.168.0.0/24"
+        }
+
+    }
+}

@@ -1,0 +1,382 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "primaryStorageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "primaryVmName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primaryVmAdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primaryVmAdminPassword": {
+      "type": "securestring"
+    },
+    "primaryVmUbuntuOSVersion": {
+      "type": "string",
+      "defaultValue": "14.04.2-LTS",
+      "allowedValues": [
+        "12.04.5-LTS",
+        "14.04.2-LTS"
+      ]
+    },
+    "secondaryStorageAccountType": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "secondaryName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "secondaryAdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "secondaryAdminPassword": {
+      "type": "securestring"
+    },
+    "secondaryUbuntuOSVersion": {
+      "type": "string",
+      "defaultValue": "14.04.2-LTS",
+      "allowedValues": [
+        "12.04.5-LTS",
+        "14.04.2-LTS"
+      ]
+    },
+    "primarymySQlName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primarymySQlSku": {
+      "type": "string",
+      "allowedValues": [
+        "Free",
+        "Jupiter",
+        "Saturn",
+        "Venus"
+      ],
+      "defaultValue": "Free"
+    },
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    }},
+  "variables": {
+    "primaryPrefix": "10.0.0.0/16",
+    "primarySubnet1Name": "Subnet-1",
+    "primarySubnet1Prefix": "10.0.0.0/24",
+    "primarySubnet2Name": "Subnet-2",
+    "primarySubnet2Prefix": "10.0.1.0/24",
+    "secondaryPrefix": "10.0.0.0/16",
+    "secondarySubnet1Name": "Subnet-1",
+    "secondarySubnet1Prefix": "10.0.0.0/24",
+    "secondarySubnet2Name": "Subnet-2",
+    "secondarySubnet2Prefix": "10.0.1.0/24",
+    "primaryStorageAccountName": "[concat('primaryStorageAccount', uniqueString(resourceGroup().id))]",
+    "primaryVmImagePublisher": "Canonical",
+    "primaryVmImageOffer": "UbuntuServer",
+    "primaryVmOSDiskName": "primaryVmOSDisk",
+    "primaryVmVmSize": "Standard_D2_v2",
+    "primaryVmVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'primary')]",
+    "primaryVmSubnetRef": "[concat(variables('primaryVmVnetID'), '/subnets/', variables('primarySubnet1Name'))]",
+    "primaryVmStorageAccountContainerName": "vhds",
+    "primaryVmNicName": "[concat(parameters('primaryVmName'), 'NetworkInterface')]",
+    "secondaryStorageAccountName": "[concat('secondaryStorageAccount', uniqueString(resourceGroup().id))]",
+    "secondaryImagePublisher": "Canonical",
+    "secondaryImageOffer": "UbuntuServer",
+    "secondaryOSDiskName": "secondaryOSDisk",
+    "secondaryVmSize": "Standard_D2_v2",
+    "secondaryVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'secondary')]",
+    "secondarySubnetRef": "[concat(variables('secondaryVnetID'), '/subnets/', variables('secondarySubnet1Name'))]",
+    "secondaryStorageAccountContainerName": "vhds",
+    "secondaryNicName": "[concat(parameters('secondaryName'), 'NetworkInterface')]",
+    "testTemplateFolder": "nestedtemplates",
+    "testTemplateFileName": "test.json",
+    "testTemplateParametersFileName": "test.parameters.json"},
+  "resources": [
+    {
+      "name": "primary",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "primary"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('primaryPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('primarySubnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('primarySubnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('primarySubnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('primarySubnet2Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "secondary",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "secondary"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('secondaryPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('secondarySubnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('secondarySubnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('secondarySubnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('secondarySubnet2Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('primaryStorageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-01-01",
+      "sku": {
+        "name": "[parameters('primaryStorageAccountType')]"
+      },
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "primaryStorageAccount"
+      },
+      "kind": "Storage"
+    },
+    {
+      "name": "[variables('primaryVmNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', 'primary')]"
+      ],
+      "tags": {
+        "displayName": "primaryVmNic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('primaryVmSubnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('primaryVmName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('primaryStorageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('primaryVmNicName'))]"
+      ],
+      "tags": {
+        "displayName": "primaryVm"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('primaryVmVmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('primaryVmName')]",
+          "adminUsername": "[parameters('primaryVmAdminUsername')]",
+          "adminPassword": "[parameters('primaryVmAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('primaryVmImagePublisher')]",
+            "offer": "[variables('primaryVmImageOffer')]",
+            "sku": "[parameters('primaryVmUbuntuOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "primaryVmOSDisk",
+            "vhd": {
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('primaryStorageAccountName')), '2016-01-01').primaryEndpoints.blob, variables('primaryVmStorageAccountContainerName'), '/', variables('primaryVmOSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('primaryVmNicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[variables('secondaryStorageAccountName')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-01-01",
+      "sku": {
+        "name": "[parameters('secondaryStorageAccountType')]"
+      },
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "secondaryStorageAccount"
+      },
+      "kind": "Storage"
+    },
+    {
+      "name": "[variables('secondaryNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', 'secondary')]"
+      ],
+      "tags": {
+        "displayName": "secondaryNic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('secondarySubnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('secondaryName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('secondaryStorageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('secondaryNicName'))]"
+      ],
+      "tags": {
+        "displayName": "secondary"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('secondaryVmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('secondaryName')]",
+          "adminUsername": "[parameters('secondaryAdminUsername')]",
+          "adminPassword": "[parameters('secondaryAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('secondaryImagePublisher')]",
+            "offer": "[variables('secondaryImageOffer')]",
+            "sku": "[parameters('secondaryUbuntuOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "secondaryOSDisk",
+            "vhd": {
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('secondaryStorageAccountName')), '2016-01-01').primaryEndpoints.blob, variables('secondaryStorageAccountContainerName'), '/', variables('secondaryOSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('secondaryNicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[parameters('primarymySQlName')]",
+      "type": "SuccessBricks.ClearDB/databases",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01",
+      "plan": {
+        "name": "[parameters('primarymySQlSku')]"
+      },
+      "dependsOn": [ ],
+      "tags": {
+        "provision_source": "RMS",
+        "displayName": "primarymySQl"
+      }
+    },
+    {
+      "name": "test",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2016-09-01",
+      "dependsOn": [ ],
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('testTemplateFolder'), '/', variables('testTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parametersLink": {
+          "uri": "[concat(parameters('_artifactsLocation'), '/', variables('testTemplateFolder'), '/', variables('testTemplateParametersFileName'), parameters('_artifactsLocationSasToken'))]",
+          "contentVersion": "1.0.0.0"
+        }
+      }
+    }],
+  "outputs": {}
+}

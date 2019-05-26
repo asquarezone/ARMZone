@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "ARMReferenceArchitectureNtier", "ARMReferenceArchitectureNtier\ARMReferenceArchitectureNtier.deployproj", "{092233DD-9C29-4BC4-8A50-28530B1FBA04}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{092233DD-9C29-4BC4-8A50-28530B1FBA04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{092233DD-9C29-4BC4-8A50-28530B1FBA04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{092233DD-9C29-4BC4-8A50-28530B1FBA04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{092233DD-9C29-4BC4-8A50-28530B1FBA04}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {90BEA3F2-155B-441A-B55E-EAEABDB76694}
+	EndGlobalSection
+EndGlobal

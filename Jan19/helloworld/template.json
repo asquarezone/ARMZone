@@ -1,0 +1,35 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "apiVersion": "2018-06-01",
+            "type": "Microsoft.Compute/disks",
+            "name": "qtstoragedisk",
+            "properties":{
+                "creationData": {
+                    "createOption": "Empty"
+                },
+                "diskSizeGB": 1
+            },
+            "sku": {
+                "name": "Premium_LRS",
+                "tier": "Premium"
+            }
+
+        },
+        {
+            "apiVersion": "2018-06-01",
+            "type": "Microsoft.Compute/vm",
+            "name": "qtvm",
+            "properties":{
+                
+            }
+
+        },
+        {
+
+        }
+
+    ]
+}

@@ -1,0 +1,54 @@
+{
+    "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "network_name":{
+            "type": "string",
+            "defaultValue": "ntier"
+        },
+        "network_location" : {
+            "type": "string",
+            "defaultValue": "Central US",
+            "allowedValues": ["Central US", "East US"]
+        },
+        "network_addressSpace":{
+            "type": "array",
+            "defaultValue": ["10.0.0.0/16"]
+        },
+        "subnet_addressSpaces":{
+            "type": "array",
+            "defaultValue": ["10.0.0.0/24","10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"]
+        }
+
+    },
+    "resources": [
+        {
+            "name": "[parameters('network_name')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2018-08-01",
+            "location":"[parameters('network_location')]",
+            "properties":{
+                "addressSpace":{
+                    "addressPrefixes":"[parameters('network_addressSpace')]"
+                }
+            }
+            
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('network_name'),'/subnet',copyIndex())]",
+            "apiVersion": "2018-08-01",
+            "properties":{
+                "addressPrefix": "[parameters('subnet_addressSpaces')[copyIndex()]]"
+            },
+            "copy": {
+                "count": "[length(parameters('subnet_addressSpaces'))]",
+                "name": "subnetCopy",
+                "batchSize": 1,
+                "mode": "Serial"
+            },
+            "dependsOn": ["[parameters('network_name')]"]
+        }
+    ]
+
+}

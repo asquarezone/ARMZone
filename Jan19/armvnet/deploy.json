@@ -1,0 +1,43 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkName":{
+            "type": "string",
+            "defaultValue": "myVirtualNetwork"
+        },
+        "subnetName":{
+            "type": "string",
+            "defaultValue": "myVirtualSubnet"
+        },
+        "networkAdressPrefixes": {
+            "type": "array",
+            "defaultValue": ["10.1.0.0/16"]
+        },
+        "subnetAddressPrefix": {
+            "type": "string",
+            "defaultValue": "10.1.0.0/24"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('networkName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2018-08-01",
+            "location": "East Us",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": "[parameters('networkAdressPrefixes')]",
+                },
+                "subnets": [
+                    {
+                        "name": "[parameters('subnetName')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnetAddressPrefix')]"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

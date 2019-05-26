@@ -1,0 +1,15 @@
+# create security group  with 3306 port for 0.0.0.0/0
+
+aws rds create-db-instance --db-name MySQL --db-instance-identifier qt-rds-test --allocated-storage 20 --db-instance-class db.t2.micro  --engine mysql --master-username root --master-user-password rootroot  
+
+
+# Create a VPC with 2 public & 2 private subnets
+#  Create db Security Group (open port for vpc cidr) 
+# create db subnet group with 2 private subnets
+# Create db instance
+# Create db instance read replica
+# promote read replica
+# delete read replica
+# delete db instance
+#
+

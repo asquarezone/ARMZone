@@ -1,0 +1,257 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "storage1Type": {
+      "type": "string",
+      "defaultValue": "Standard_LRS",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_ZRS",
+        "Standard_GRS",
+        "Standard_RAGRS",
+        "Premium_LRS"
+      ]
+    },
+    "webServerName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "webServerAdminUserName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "webServerAdminPassword": {
+      "type": "securestring"
+    },
+    "webServerUbuntuOSVersion": {
+      "type": "string",
+      "defaultValue": "14.04.2-LTS",
+      "allowedValues": [
+        "12.04.5-LTS",
+        "14.04.2-LTS"
+      ]
+    },
+    "mysqlserverAdminLogin": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mysqlserverAdminLoginPassword": {
+      "type": "securestring"
+    },
+    "mydbName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mydbCollation": {
+      "type": "string",
+      "minLength": 1,
+      "defaultValue": "SQL_Latin1_General_CP1_CI_AS"
+    },
+    "mydbEdition": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "Standard",
+        "Premium"
+      ]
+    },
+    "mydbRequestedServiceObjectiveName": {
+      "type": "string",
+      "defaultValue": "Basic",
+      "allowedValues": [
+        "Basic",
+        "S0",
+        "S1",
+        "S2",
+        "P1",
+        "P2",
+        "P3"
+      ],
+      "metadata": {
+        "description": "Describes the performance level for Edition"
+      }
+    }},
+  "variables": {
+    "ntierPrefix": "10.0.0.0/16",
+    "ntierSubnet1Name": "Subnet-1",
+    "ntierSubnet1Prefix": "10.0.0.0/24",
+    "ntierSubnet2Name": "Subnet-2",
+    "ntierSubnet2Prefix": "10.0.1.0/24",
+    "storage1Name": "[concat('storage1', uniqueString(resourceGroup().id))]",
+    "webServerImagePublisher": "Canonical",
+    "webServerImageOffer": "UbuntuServer",
+    "webServerOSDiskName": "webServerOSDisk",
+    "webServerVmSize": "Standard_D2_v2",
+    "webServerVnetID": "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
+    "webServerSubnetRef": "[concat(variables('webServerVnetID'), '/subnets/', variables('ntierSubnet1Name'))]",
+    "webServerStorageAccountContainerName": "vhds",
+    "webServerNicName": "[concat(parameters('webServerName'), 'NetworkInterface')]",
+    "mysqlserverName": "[concat('mysqlserver', uniqueString(resourceGroup().id))]"},
+  "resources": [
+    {
+      "name": "ntier",
+      "type": "Microsoft.Network/virtualNetworks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "ntier"
+      },
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('ntierPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('ntierSubnet1Name')]",
+            "properties": {
+              "addressPrefix": "[variables('ntierSubnet1Prefix')]"
+            }
+          },
+          {
+            "name": "[variables('ntierSubnet2Name')]",
+            "properties": {
+              "addressPrefix": "[variables('ntierSubnet2Prefix')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[variables('storage1Name')]",
+      "type": "Microsoft.Storage/storageAccounts",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-01-01",
+      "sku": {
+        "name": "[parameters('storage1Type')]"
+      },
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "storage1"
+      },
+      "kind": "Storage"
+    },
+    {
+      "name": "[variables('webServerNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2016-03-30",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+      ],
+      "tags": {
+        "displayName": "webServerNic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('webServerSubnetRef')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "[parameters('webServerName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2015-06-15",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storage1Name'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('webServerNicName'))]"
+      ],
+      "tags": {
+        "displayName": "webServer"
+      },
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[variables('webServerVmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[parameters('webServerName')]",
+          "adminUsername": "[parameters('webServerAdminUsername')]",
+          "adminPassword": "[parameters('webServerAdminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('webServerImagePublisher')]",
+            "offer": "[variables('webServerImageOffer')]",
+            "sku": "[parameters('webServerUbuntuOSVersion')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "webServerOSDisk",
+            "vhd": {
+              "uri": "[concat(reference(resourceId('Microsoft.Storage/storageAccounts', variables('storage1Name')), '2016-01-01').primaryEndpoints.blob, variables('webServerStorageAccountContainerName'), '/', variables('webServerOSDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('webServerNicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "[variables('mysqlserverName')]",
+      "type": "Microsoft.Sql/servers",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2014-04-01-preview",
+      "dependsOn": [ ],
+      "tags": {
+        "displayName": "mysqlserver"
+      },
+      "properties": {
+        "administratorLogin": "[parameters('mysqlserverAdminLogin')]",
+        "administratorLoginPassword": "[parameters('mysqlserverAdminLoginPassword')]"
+      },
+      "resources": [
+        {
+          "name": "AllowAllWindowsAzureIps",
+          "type": "firewallrules",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('mysqlserverName'))]"
+          ],
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+          }
+        },
+        {
+          "name": "[parameters('mydbName')]",
+          "type": "databases",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "2014-04-01-preview",
+          "dependsOn": [
+            "[resourceId('Microsoft.Sql/servers', variables('mysqlserverName'))]"
+          ],
+          "tags": {
+            "displayName": "mydb"
+          },
+          "properties": {
+            "collation": "[parameters('mydbCollation')]",
+            "edition": "[parameters('mydbEdition')]",
+            "maxSizeBytes": "1073741824",
+            "requestedServiceObjectiveName": "[parameters('mydbRequestedServiceObjectiveName')]"
+          }
+        }
+      ]
+    }],
+  "outputs": {}
+}

@@ -1,0 +1,100 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.1",
+    "parameters": {
+        "addressrange":{
+            "type": "string",
+            "defaultValue": "10.10.0.0/16"
+        },
+        "websubnetrange":{
+            "type": "string",
+            "defaultValue": "10.10.0.0/24"
+        },
+        "dbsubnetrange":{
+            "type": "string",
+            "defaultValue": "10.10.1.0/24"
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "networkname": "ntier",
+        "websubnetname": "web",
+        "dbsubnetname": "db"
+    },
+    "resources": [
+        {
+            "name": "[variables('networkname')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "location": "[variables('location')]",
+            "apiVersion": "2018-11-01",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('addressrange')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('websubnetname')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('websubnetrange')]"
+                        }
+                    },
+                    {
+                        "name": "[variables('dbsubnetname')]",
+                        "properties": {
+                            "addressPrefix": "[parameters('dbsubnetrange')]"
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "mynsg"
+            ]
+        },
+        {
+            "name": "mynsg",
+            "location": "[resourceGroup().location]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2018-11-01",
+            "properties":{
+                "securityRules":[
+                    {
+                        "name": "allowallinbound",
+                        "properties":{
+                            "description": "this security rule allows all traffic",
+                            "protocol":"*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access":"Allow",
+                            "priority": "1000",
+                            "direction":"Inbound"
+                        }
+                    },
+                    {
+                        "name": "allowalloutbound",
+                        "properties":{
+                            "description": "this security rule allows all traffic",
+                            "protocol":"*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "*",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access":"Allow",
+                            "priority": "1000",
+                            "direction":"Outbound"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "networkrange": {
+            "type": "string",
+            "value": "[parameters('addressrange')]"
+        }
+    }
+}
