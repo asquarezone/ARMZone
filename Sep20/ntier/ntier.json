@@ -2,72 +2,48 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.1",
     "parameters": {
-        "ntierlocation": {
-            "type": "string",
+        "ntiervnetconfig": {
+            "type": "object",
             "metadata": {
-                "description": "Choose the location of ntier deployment"
+                "description": "Enter the networ configuration values"
             },
-            "defaultValue": "East US",
-            "allowedValues": ["East US", "Central US"]
-        },
-        "ntieriprange": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter the ip address range for the network"
-            },
-            "defaultValue": "192.168.0.0/16"
-        },
-        "websubnetiprange": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter the ip address range for the web subnet"
-            },
-            "defaultValue": "192.168.0.0/24"
-        },
-        "appsubnetiprange": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter the ip address range for the app subnet"
-            },
-            "defaultValue": "192.168.1.0/24"
-        },
-        "dbsubnetiprange": {
-            "type": "string",
-            "metadata": {
-                "description": "Enter the ip address range for the dbsubnet"
-            },
-            "defaultValue": "192.168.2.0/24"
+            "defaultValue": {
+                "name": "ntier",
+                "addressrange": "192.168.0.0/16",
+                "websubnetaddressrange": "192.168.0.0/24",
+                "appsubnetaddressrange": "192.168.1.0/24",
+                "dbsubnetaddressrange": "192.168.2.0/24"
+            }
         }
-
     },
 
     "resources": [
         {
-            "name": "ntier",
+            "name": "[parameters('ntiervnetconfig').name]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2020-05-01",
-            "location": "[parameters('ntierlocation')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": [ "[parameters('ntieriprange')]" ]
+                    "addressPrefixes": [ "[parameters('ntiervnetconfig').addressrange]" ]
                 },
                 "subnets": [
                     {
                         "name": "WebSubnet",
                         "properties": {
-                            "addressPrefix": "[parameters('websubnetiprange')]"
+                            "addressPrefix": "[parameters('ntiervnetconfig').websubnetaddressrange]"
                         }
                     },
                     {
                         "name": "AppSubnet",
                         "properties": {
-                            "addressPrefix": "[parameters('appsubnetiprange')]"
+                            "addressPrefix": "[parameters('ntiervnetconfig').appsubnetaddressrange]"
                         }
                     },
                     {
                         "name": "DbSubnet",
                         "properties": {
-                            "addressPrefix": "[parameters('dbsubnetiprange')]"
+                            "addressPrefix": "[parameters('ntiervnetconfig').dbsubnetaddressrange]"
                         }
                     }
                 ]
