@@ -9,33 +9,30 @@
             "location": "East US",
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": [ "192.168.0.0/16" ],
-                    "subnets": [
-                        {
-                            "name": "WebSubnet",
-                            "properties": {
-                                "addressPrefix": "192.168.0.0/24"
-                            }
-                        },
-                        {
-                            "name": "AppSubnet",
-                            "properties": {
-                                "addressPrefix": "192.168.1.0/24"
-                            }
-                        },
-                        {
-                            "name": "DbSubnet",
-                            "properties": {
-                                "addressPrefix": "192.168.2.0/24"
-                            }
+                    "addressPrefixes": [ "192.168.0.0/16" ]
+                },
+                "subnets": [
+                    {
+                        "name": "WebSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.0.0/24"
                         }
-                    ]
-                }
+                    },
+                    {
+                        "name": "AppSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "DbSubnet",
+                        "properties": {
+                            "addressPrefix": "192.168.2.0/24"
+                        }
+                    }
+                ]
             }
-
-
         }
-
     ]
 
 }
