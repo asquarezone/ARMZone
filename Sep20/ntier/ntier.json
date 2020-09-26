@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.1",
+    "resources": [
+        {
+            "name": "ntier",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-05-01",
+            "location": "East US",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [ "192.168.0.0/16" ],
+                    "subnets": [
+                        {
+                            "name": "WebSubnet",
+                            "properties": {
+                                "addressPrefix": "192.168.0.0/24"
+                            }
+                        },
+                        {
+                            "name": "AppSubnet",
+                            "properties": {
+                                "addressPrefix": "192.168.1.0/24"
+                            }
+                        },
+                        {
+                            "name": "DbSubnet",
+                            "properties": {
+                                "addressPrefix": "192.168.2.0/24"
+                            }
+                        }
+                    ]
+                }
+            }
+
+
+        }
+
+    ]
+
+}
