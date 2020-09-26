@@ -1,33 +1,73 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.1",
+    "parameters": {
+        "ntierlocation": {
+            "type": "string",
+            "metadata": {
+                "description": "Choose the location of ntier deployment"
+            },
+            "defaultValue": "East US",
+            "allowedValues": ["East US", "Central US"]
+        },
+        "ntieriprange": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the ip address range for the network"
+            },
+            "defaultValue": "192.168.0.0/16"
+        },
+        "websubnetiprange": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the ip address range for the web subnet"
+            },
+            "defaultValue": "192.168.0.0/24"
+        },
+        "appsubnetiprange": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the ip address range for the app subnet"
+            },
+            "defaultValue": "192.168.1.0/24"
+        },
+        "dbsubnetiprange": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the ip address range for the dbsubnet"
+            },
+            "defaultValue": "192.168.2.0/24"
+        }
+
+    },
+
     "resources": [
         {
             "name": "ntier",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2020-05-01",
-            "location": "East US",
+            "location": "[parameters('ntierlocation')]",
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": [ "192.168.0.0/16" ]
+                    "addressPrefixes": [ "[parameters('ntieriprange')]" ]
                 },
                 "subnets": [
                     {
                         "name": "WebSubnet",
                         "properties": {
-                            "addressPrefix": "192.168.0.0/24"
+                            "addressPrefix": "[parameters('websubnetiprange')]"
                         }
                     },
                     {
                         "name": "AppSubnet",
                         "properties": {
-                            "addressPrefix": "192.168.1.0/24"
+                            "addressPrefix": "[parameters('appsubnetiprange')]"
                         }
                     },
                     {
                         "name": "DbSubnet",
                         "properties": {
-                            "addressPrefix": "192.168.2.0/24"
+                            "addressPrefix": "[parameters('dbsubnetiprange')]"
                         }
                     }
                 ]
