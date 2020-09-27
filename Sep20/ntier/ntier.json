@@ -10,9 +10,8 @@
             "defaultValue": {
                 "name": "ntier",
                 "addressrange": "192.168.0.0/16",
-                "websubnetaddressrange": "192.168.0.0/24",
-                "appsubnetaddressrange": "192.168.1.0/24",
-                "dbsubnetaddressrange": "192.168.2.0/24"
+                "subnetnames": ["appgateway", "management", "web", "business", "data", "ad"],
+                "subnetranges": ["192.168.0.0/24","192.168.1.0/24","192.168.2.0/24","192.168.3.0/24","192.168.4.0/24","192.168.5.0/24"]
             }
         }
     },
@@ -26,28 +25,24 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [ "[parameters('ntiervnetconfig').addressrange]" ]
-                },
-                "subnets": [
-                    {
-                        "name": "WebSubnet",
-                        "properties": {
-                            "addressPrefix": "[parameters('ntiervnetconfig').websubnetaddressrange]"
-                        }
-                    },
-                    {
-                        "name": "AppSubnet",
-                        "properties": {
-                            "addressPrefix": "[parameters('ntiervnetconfig').appsubnetaddressrange]"
-                        }
-                    },
-                    {
-                        "name": "DbSubnet",
-                        "properties": {
-                            "addressPrefix": "[parameters('ntiervnetconfig').dbsubnetaddressrange]"
-                        }
-                    }
-                ]
+                }
             }
+        },
+        {
+            "name": "[concat(parameters('ntiervnetconfig').name,'/', parameters('ntiervnetconfig').subnetnames[copyIndex()])]",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-05-01",
+            "properties": {
+                "addressPrefix": "[parameters('ntiervnetconfig').subnetranges[copyIndex()]]"
+            },
+            "copy": {
+                "name": "subnetcopy",
+                "count": "[length(parameters('ntiervnetconfig').subnetnames)]",
+                "mode": "Serial"
+            },
+            "dependsOn": [
+                "[parameters('ntiervnetconfig').name]"
+            ]
         }
     ]
 
