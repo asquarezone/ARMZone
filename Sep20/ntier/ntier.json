@@ -11,16 +11,57 @@
                 "name": "ntier",
                 "addressrange": "192.168.0.0/16",
                 "subnetnames": ["appgateway", "management", "web", "business", "data", "ad"],
-                "subnetranges": ["192.168.0.0/24","192.168.1.0/24","192.168.2.0/24","192.168.3.0/24","192.168.4.0/24","192.168.5.0/24"]
+                "subnetranges": ["192.168.0.0/24","192.168.1.0/24","192.168.2.0/24","192.168.3.0/24","192.168.4.0/24","192.168.5.0/24"],
+                "nsgs": [
+                    {
+                        "name": "appgnsg",
+                        "portranges": ["80", "443"],
+                        "priority": 300,
+                        "sourceAddressPrefix": "*"
+                    },
+                    {
+                        "name": "mgmtnsg",
+                        "portranges": ["3389", "22"],
+                        "priority": 300,
+                        "sourceAddressPrefix": "*"
+                    },
+                    {
+                        "name": "webnsg",
+                        "portranges": ["80", "443"],
+                        "priority": 300,
+                        "sourceAddressPrefix": "*"
+                    },
+                    {
+                        "name": "businessnsg",
+                        "portranges": ["8080"],
+                        "priority": 300,
+                        "sourceAddressPrefix": "192.168.0.0/16"
+                    },
+                    {
+                        "name": "datansg",
+                        "portranges": ["1433", "1432"],
+                        "priority": 300,
+                        "sourceAddressPrefix": "192.168.0.0/16"
+                    },
+                    {
+                        "name": "adnsg",
+                        "portranges": ["80", "443"],
+                        "priority": 300,
+                        "sourceAddressPrefix": "*"
+                    }
+
+                ]
             }
         }
     },
-
+    "variables": {
+        "networkapiversion": "2020-05-01"
+    },
     "resources": [
         {
             "name": "[parameters('ntiervnetconfig').name]",
             "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "[variables('networkapiversion')]",
             "location": "[resourceGroup().location]",
             "properties": {
                 "addressSpace": {
@@ -31,9 +72,10 @@
         {
             "name": "[concat(parameters('ntiervnetconfig').name,'/', parameters('ntiervnetconfig').subnetnames[copyIndex()])]",
             "type": "Microsoft.Network/virtualNetworks/subnets",
-            "apiVersion": "2020-05-01",
+            "apiVersion": "[variables('networkapiversion')]",
             "properties": {
-                "addressPrefix": "[parameters('ntiervnetconfig').subnetranges[copyIndex()]]"
+                "addressPrefix": "[parameters('ntiervnetconfig').subnetranges[copyIndex()]]",
+                "networkSecurityGroup": "[reference(parameters('ntiervnetconfig').nsgs[copyIndex()].name)]"
             },
             "copy": {
                 "name": "subnetcopy",
@@ -41,9 +83,39 @@
                 "mode": "Serial"
             },
             "dependsOn": [
-                "[parameters('ntiervnetconfig').name]"
+                "[parameters('ntiervnetconfig').name]",
+                "[parameters('ntiervnetconfig').nsgs[copyIndex()].name]"
             ]
+        },
+        {
+            "name": "[parameters('ntiervnetconfig').nsgs[copyIndex()].name]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "[variables('networkapiversion')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "[concat('nsg',parameters('ntiervnetconfig').nsgs[copyIndex()].name)]",
+                        "properties": {
+                            "description": "rule for subnet",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRanges": "[parameters('ntiervnetconfig').nsgs[copyIndex()].portranges]",
+                            "sourceAddressPrefix": "[parameters('ntiervnetconfig').nsgs[copyIndex()].sourceAddressPrefix]",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": "[parameters('ntiervnetconfig').nsgs[copyIndex()].priority]",
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "copy": {
+                "name": "nsgcopy",
+                "count": "[length(parameters('ntiervnetconfig').nsgs)]",
+                "mode": "Serial"
+
+            }
         }
     ]
-
 }
