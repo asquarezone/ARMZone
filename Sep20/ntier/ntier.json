@@ -75,7 +75,9 @@
             "apiVersion": "[variables('networkapiversion')]",
             "properties": {
                 "addressPrefix": "[parameters('ntiervnetconfig').subnetranges[copyIndex()]]",
-                "networkSecurityGroup": "[reference(parameters('ntiervnetconfig').nsgs[copyIndex()].name)]"
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ntiervnetconfig').nsgs[copyIndex()].name)]"
+                }
             },
             "copy": {
                 "name": "subnetcopy",
