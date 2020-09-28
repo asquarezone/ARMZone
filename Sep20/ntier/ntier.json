@@ -10,42 +10,42 @@
             "defaultValue": {
                 "name": "ntier",
                 "addressrange": "192.168.0.0/16",
-                "subnetnames": ["appgateway", "management", "web", "business", "data", "ad"],
-                "subnetranges": ["192.168.0.0/24","192.168.1.0/24","192.168.2.0/24","192.168.3.0/24","192.168.4.0/24","192.168.5.0/24"],
+                "subnetnames": [ "appgateway", "management", "web", "business", "data", "ad" ],
+                "subnetranges": [ "192.168.0.0/24", "192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24", "192.168.4.0/24", "192.168.5.0/24" ],
                 "nsgs": [
                     {
                         "name": "appgnsg",
-                        "portranges": ["80", "443"],
+                        "portranges": [ "80", "443" ],
                         "priority": 300,
                         "sourceAddressPrefix": "*"
                     },
                     {
                         "name": "mgmtnsg",
-                        "portranges": ["3389", "22"],
+                        "portranges": [ "3389", "22" ],
                         "priority": 300,
                         "sourceAddressPrefix": "*"
                     },
                     {
                         "name": "webnsg",
-                        "portranges": ["80", "443"],
+                        "portranges": [ "80", "443" ],
                         "priority": 300,
                         "sourceAddressPrefix": "*"
                     },
                     {
                         "name": "businessnsg",
-                        "portranges": ["8080"],
+                        "portranges": [ "8080" ],
                         "priority": 300,
                         "sourceAddressPrefix": "192.168.0.0/16"
                     },
                     {
                         "name": "datansg",
-                        "portranges": ["1433", "1432"],
+                        "portranges": [ "1433", "1432" ],
                         "priority": 300,
                         "sourceAddressPrefix": "192.168.0.0/16"
                     },
                     {
                         "name": "adnsg",
-                        "portranges": ["80", "443"],
+                        "portranges": [ "80", "443" ],
                         "priority": 300,
                         "sourceAddressPrefix": "*"
                     }
@@ -55,7 +55,8 @@
         }
     },
     "variables": {
-        "networkapiversion": "2020-05-01"
+        "networkapiversion": "2020-05-01",
+        "mgmtsubnetname": "[parameters('ntiervnetconfig').subnetnames[1]]"
     },
     "resources": [
         {
@@ -117,6 +118,49 @@
                 "count": "[length(parameters('ntiervnetconfig').nsgs)]",
                 "mode": "Serial"
 
+            }
+        },
+        {
+            "name": "mgmtpublicip",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "[variables('networkapiversion')]",
+            "location": "[resourceGroup().location]",
+            "comments": "Public IP for your Management VM",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "name": "managementnic",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "[variables('networkapiversion')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "mgmtnic"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('ntiervnetconfig').name)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ntiervnetconfig').nsgs[1].name)]",
+                "[resourceId('Microsoft.Network/publicIpAddresses', 'mgmtpublicip')]"
+            ],
+            "properties": {
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ntiervnetconfig').nsgs[1].name)]"
+                },
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('ntiervnetconfig').name, variables('mgmtsubnetname'))]"
+                            },
+                            "publicIpAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', 'mgmtpublicip')]"
+                            }
+                        }
+                    }
+                ]
             }
         }
     ]
