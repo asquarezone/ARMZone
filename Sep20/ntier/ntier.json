@@ -128,7 +128,11 @@
             "comments": "Public IP for your Management VM",
             "properties": {
                 "publicIPAllocationMethod": "Dynamic"
-            }
+            },
+            "dependsOn": [
+                "[parameters('ntiervnetconfig').name]",
+                "[parameters('ntiervnetconfig').nsgs[4].name]"
+            ]
         },
         {
             "name": "managementnic",
@@ -138,11 +142,7 @@
             "tags": {
                 "displayName": "mgmtnic"
             },
-            "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('ntiervnetconfig').name)]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ntiervnetconfig').nsgs[1].name)]",
-                "[resourceId('Microsoft.Network/publicIpAddresses', 'mgmtpublicip')]"
-            ],
+
             "properties": {
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ntiervnetconfig').nsgs[1].name)]"
@@ -161,7 +161,81 @@
                         }
                     }
                 ]
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('ntiervnetconfig').name)]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('ntiervnetconfig').nsgs[1].name)]",
+                "[resourceId('Microsoft.Network/publicIpAddresses', 'mgmtpublicip')]"
+            ]
+        },
+        {
+            "name": "ltarmstorage",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-06-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "lthrms Storage Account"
+            },
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "Storage",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('ntiervnetconfig').name)]"
+            ]
+        },
+        {
+            "name": "mgmtjumpbox",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "mgmt jumpbox"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "osProfile": {
+                    "computerName": "mgmtjumpbox",
+                    "adminUsername": "qtdevops",
+                    "adminPassword": "motherindia@123"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "mgmtjbox-OSDisk",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'managementnic')]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('ltarmstorage'))).primaryEndpoints.blob]"
+                    }
+                }
+
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/', toLower('ltarmstorage'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', 'managementnic')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('ntiervnetconfig').name, variables('mgmtsubnetname'))]"
+            ]
+
+
         }
     ]
 }
