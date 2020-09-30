@@ -237,5 +237,16 @@
 
 
         }
-    ]
+    ],
+    "outputs": {
+        "ipaddress": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'mgmtpublicip'))]"
+        },
+        "vm": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.Compute/virtualMachines','mgmtjumpbox'), '2019-07-01','Full')]"
+        }
+    }
+
 }
