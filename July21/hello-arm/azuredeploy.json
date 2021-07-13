@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "name": "arm-vnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "arm-vnet"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.10.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "Web",
+                        "properties": {
+                            "addressPrefix": "10.10.0.0/24"
+                        }
+                    },
+                    {
+                        "name": "App",
+                        "properties": {
+                            "addressPrefix": "10.10.1.0/24"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
