@@ -1,0 +1,37 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "name": "ntier-vnet",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-07-01",
+            "location": "eastus",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [ "192.168.0.0/16", "10.100.0.0/16" ]
+                },
+                "subnets": [
+                    {
+                        "name": "web-1",
+                        "properties": {
+                            "addressPrefix": "192.168.0.0/24"
+                        }
+                    },
+                    {
+                        "name": "app-1",
+                        "properties": {
+                            "addressPrefix": "192.168.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "db-1",
+                        "properties": {
+                            "addressPrefix": "192.168.2.0/24"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
