@@ -1,0 +1,65 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "name": "ntier",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "ntier"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "web",
+                        "properties": {
+                            "addressPrefix": "10.0.0.0/24"
+                        }
+                    },
+                    {
+                        "name": "business",
+                        "properties": {
+                            "addressPrefix": "10.0.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "properties": {
+                            "addressPrefix": "10.0.2.0/24"
+                        }
+                    },
+                    {
+                        "name": "active-directory",
+                        "properties": {
+                            "addressPrefix": "10.0.3.0/24"
+                        }
+                    },
+                    {
+                        "name": "management",
+                        "properties": {
+                            "addressPrefix": "10.0.4.0/24"
+                        }
+                    },
+                    {
+                        "name": "app-gateway",
+                        "properties": {
+                            "addressPrefix": "10.0.5.0/24"
+                        }
+                    }
+                    
+                ]
+            }
+        }
+    ],
+    "outputs": {}
+}
