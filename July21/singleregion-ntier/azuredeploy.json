@@ -14,10 +14,13 @@
         }
     },
     "functions": [],
-    "variables": {},
+    "variables": {
+        "vnet-name": "ntier",
+        "subnet-names": ["web", "business", "data", "active-directory", "management", "app-gateway"]
+    },
     "resources": [
         {
-            "name": "ntier",
+            "name": "[variables('vnet-name')]",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2019-11-01",
             "location": "[resourceGroup().location]",
@@ -32,7 +35,7 @@
                 },
                 "subnets": [
                     {
-                        "name": "web",
+                        "name": "[variables('subnet-names')[0]]",
                         "properties": {
                             "addressPrefix": "[parameters('addressprefix').subnetcidr[0]]",
                             "networkSecurityGroup": {
@@ -41,7 +44,7 @@
                         }
                     },
                     {
-                        "name": "business",
+                        "name": "[variables('subnet-names')[1]]",
                         "properties": {
                             "addressPrefix": "[parameters('addressprefix').subnetcidr[1]]",
                             "networkSecurityGroup": {
@@ -50,7 +53,7 @@
                         }
                     },
                     {
-                        "name": "data",
+                        "name": "[variables('subnet-names')[2]]",
                         "properties": {
                             "addressPrefix": "[parameters('addressprefix').subnetcidr[2]]",
                             "networkSecurityGroup": {
@@ -59,13 +62,13 @@
                         }
                     },
                     {
-                        "name": "active-directory",
+                        "name": "[variables('subnet-names')[3]]",
                         "properties": {
                             "addressPrefix": "[parameters('addressprefix').subnetcidr[3]]"
                         }
                     },
                     {
-                        "name": "management",
+                        "name": "[variables('subnet-names')[4]]",
                         "properties": {
                             "addressPrefix": "[parameters('addressprefix').subnetcidr[4]]",
                             "networkSecurityGroup": {
@@ -75,7 +78,7 @@
                         
                     },
                     {
-                        "name": "app-gateway",
+                        "name": "[variables('subnet-names')[5]]",
                         "properties": {
                             "addressPrefix": "[parameters('addressprefix').subnetcidr[5]]",
                             "networkSecurityGroup": {
