@@ -2,13 +2,15 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "network-address-space": {
-            "type": "string",
+        "addressprefix": {
+            "type": "object",
             "metadata": {
-                "description": "Address space of the virtual network"
+                "description": "Address prefix of vnet and subnets"
             },
-            "defaultValue": "10.0.0.0/16"
-
+            "defaultValue": {
+                "vnetcidr": "10.0.0.0/16",
+                "subnetcidr": ["10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24", "10.0.5.0/24"]
+            }
         }
     },
     "functions": [],
@@ -25,14 +27,14 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [
-                        "[parameters('network-address-space')]"
+                        "[parameters('addressprefix').vnetcidr]"
                     ]
                 },
                 "subnets": [
                     {
                         "name": "web",
                         "properties": {
-                            "addressPrefix": "10.0.0.0/24",
+                            "addressPrefix": "[parameters('addressprefix').subnetcidr[0]]",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
                             }
@@ -41,7 +43,7 @@
                     {
                         "name": "business",
                         "properties": {
-                            "addressPrefix": "10.0.1.0/24",
+                            "addressPrefix": "[parameters('addressprefix').subnetcidr[1]]",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'businessnsg')]"
                             }
@@ -50,7 +52,7 @@
                     {
                         "name": "data",
                         "properties": {
-                            "addressPrefix": "10.0.2.0/24",
+                            "addressPrefix": "[parameters('addressprefix').subnetcidr[2]]",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups','datansg')]"
                             }
@@ -59,13 +61,13 @@
                     {
                         "name": "active-directory",
                         "properties": {
-                            "addressPrefix": "10.0.3.0/24"
+                            "addressPrefix": "[parameters('addressprefix').subnetcidr[3]]"
                         }
                     },
                     {
                         "name": "management",
                         "properties": {
-                            "addressPrefix": "10.0.4.0/24",
+                            "addressPrefix": "[parameters('addressprefix').subnetcidr[4]]",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups','mgmtnsg')]"
                             }
@@ -75,7 +77,7 @@
                     {
                         "name": "app-gateway",
                         "properties": {
-                            "addressPrefix": "10.0.5.0/24",
+                            "addressPrefix": "[parameters('addressprefix').subnetcidr[5]]",
                             "networkSecurityGroup": {
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups','appgatewaynsg')]"
                             }
