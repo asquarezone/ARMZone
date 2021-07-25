@@ -377,5 +377,14 @@
             }
         }
     ],
-    "outputs": {}
+    "outputs": {
+        "vmpublicip": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses','myubuntuip')).ipAddress]"
+        },
+        "vm": {
+            "type": "object",
+            "value": "[reference(resourceId('Microsoft.Compute/virtualMachines','myubuntuvm'))]"
+        }
+    }
 }
