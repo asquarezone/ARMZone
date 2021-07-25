@@ -16,7 +16,9 @@
     "functions": [],
     "variables": {
         "vnet-name": "ntier",
-        "subnet-names": ["web", "business", "data", "active-directory", "management", "app-gateway"]
+        "subnet-names": ["web", "business", "data", "active-directory", "management", "app-gateway"],
+        "web-nic": "web-nic"
+
     },
     "resources": [
         {
@@ -105,6 +107,20 @@
             "location": "[resourceGroup().location]",
             "properties": {
                 "securityRules": [
+                    {
+                        "name": "opensshn",
+                        "properties": {
+                            "description": "description",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    },
                     {
                         "name": "openhttp",
                         "properties": {
@@ -244,6 +260,120 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "name": "vmnsg",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "openssh",
+                        "properties": {
+                            "description": "description",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        },
+        
+        {
+            "name": "[variables('web-nic')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[variables('web-nic')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet-name'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'myubuntuip')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'vmnsg')]"
+
+            ],
+            "properties": {
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'vmnsg')]"
+                },
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnet-name'), variables('subnet-names')[0])]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'myubuntuip')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "myubuntuip",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2019-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "myubuntuip"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            },
+            "sku": {
+                "name": "Basic"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "name": "myubuntuvm",
+            "apiVersion": "2020-12-01",
+            "location": "[resourceGroup().location]",
+
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet-name'))]",
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('web-nic'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "osProfile": {
+                    "computerName": "myubuntuvm",
+                    "adminUsername": "qtdevops",
+                    "adminPassword": "motherindia@123"
+
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('web-nic'))]"
+                        }
+                    ]
+                }
             }
         }
     ],
