@@ -9,14 +9,14 @@
             },
             "defaultValue": {
                 "vnetcidr": "10.0.0.0/16",
-                "subnetcidr": ["10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24", "10.0.5.0/24"]
+                "subnetcidr": [ "10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24", "10.0.5.0/24" ]
             }
         }
     },
     "functions": [],
     "variables": {
         "vnet-name": "ntier",
-        "subnet-names": ["web", "business", "data", "active-directory", "management", "app-gateway"],
+        "subnet-names": [ "web", "business", "data", "active-directory", "management", "app-gateway" ],
         "web-nic": "web-nic"
 
     },
@@ -77,7 +77,7 @@
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups','mgmtnsg')]"
                             }
                         }
-                        
+
                     },
                     {
                         "name": "[variables('subnet-names')[5]]",
@@ -87,9 +87,9 @@
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups','appgatewaynsg')]"
                             }
                         }
-                        
+
                     }
-                    
+
                 ]
             },
             "dependsOn": [
@@ -286,7 +286,7 @@
                 ]
             }
         },
-        
+
         {
             "name": "[variables('web-nic')]",
             "type": "Microsoft.Network/networkInterfaces",
@@ -399,13 +399,32 @@
                     "name": "AllowAllWindowsAzureIps",
                     "properties": {
                         "startIpAddress": "0.0.0.0",
-                        "endIpAddress": "0.0.0.0"
+                        "endIpAddress": "255.255.255.255"
                     }
                 }
             ]
+        },
+        {
+            "name": "qtsqlserver/qtsqldb",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2021-02-01-preview",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "qtsqldb"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', 'qtsqlserver')]"
+            ],
+            
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "edition": "Basic",
+                "maxSizeBytes": 1073741824,
+                "sampleName": "AdventureWorksLT"
+            }
         }
     ],
     "outputs": {
-        
+
     }
 }
