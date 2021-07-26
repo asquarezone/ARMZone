@@ -375,16 +375,37 @@
                     ]
                 }
             }
+        },
+        {
+            "name": "qtsqlserver",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2014-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "qtsqlserver"
+            },
+            "properties": {
+                "administratorLogin": "qtdevops",
+                "administratorLoginPassword": "motherindia@123"
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2014-04-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', 'qtsqlserver')]"
+                    ],
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "0.0.0.0"
+                    }
+                }
+            ]
         }
     ],
     "outputs": {
-        "vmpublicip": {
-            "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses','myubuntuip')).ipAddress]"
-        },
-        "vm": {
-            "type": "object",
-            "value": "[reference(resourceId('Microsoft.Compute/virtualMachines','myubuntuvm'))]"
-        }
+        
     }
 }
