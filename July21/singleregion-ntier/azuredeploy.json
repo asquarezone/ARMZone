@@ -11,6 +11,20 @@
                 "vnetcidr": "10.0.0.0/16",
                 "subnetcidr": [ "10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24", "10.0.5.0/24" ]
             }
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "artifacts location"
+            },
+            "defaultValue": "https://scriptsforqt.blob.core.windows.net/scripts/"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The SAS token required"
+            },
+            "defaultValue": ""
         }
     },
     "functions": [],
@@ -373,6 +387,32 @@
                             "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('web-nic'))]"
                         }
                     ]
+                }
+            }
+        },
+        {
+            "name": "myubuntuvm/apachescript",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2019-07-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "apache installation for Linux VM"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', 'myubuntuvm')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[uri(parameters('_artifactsLocation'), concat('installapache.sh', parameters('_artifactsLocationSasToken')))]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "sh installapache.sh"
                 }
             }
         },
