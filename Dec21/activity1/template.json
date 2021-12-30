@@ -26,13 +26,14 @@
 
   },
   "variables": {
-      "subnetNames": ["myfirstvnet/web1", "myfirstvnet/web2", "myfirstvnet/db1", "myfirstvnet/db2"]
+      "networkName": "ntier",
+      "subnetNames": ["web1", "web2", "db1", "db2"]
   },
   "resources": [ 
       {
           "type": "Microsoft.Network/virtualNetworks",
           "apiVersion": "2020-11-01",
-          "name": "myfirstvnet",
+          "name": "[variables('networkName')]",
           "location": "[parameters('location')]",
           "properties": {
               "addressSpace": {
@@ -43,14 +44,14 @@
       {
           "type": "Microsoft.Network/virtualNetworks/subnets",
           "apiVersion": "2020-11-01",
-          "name": "[variables('subnetNames')[copyIndex()]]",
+          "name": "[concat(variables('networkName'), '/', variables('subnetNames')[copyIndex()])]",
           "properties": {
               "addressPrefix": "[parameters('subnetCidrRanges')[copyIndex()]]"
           },
           // adding explicit dependency on virtual network i.e. subnet wil not be 
           //created until virtual network is ready
           "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks','myfirstvnet')]"
+              "[resourceId('Microsoft.Network/virtualNetworks',variables('networkName'))]"
           ],
           "copy": {
               "name": "subnet copy",
