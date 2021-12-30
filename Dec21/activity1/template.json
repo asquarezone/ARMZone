@@ -15,8 +15,18 @@
               "description": "Region to create resources"
           },
           "defaultValue" : "[resourceGroup().location]"
+      },
+      "subnetCidrRanges": {
+          "type": "array",
+          "metadata": {
+              "description": "subnet cidr ranges"
+          },
+          "defaultValue": ["192.168.0.0/24", "192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24"]
       }
 
+  },
+  "variables": {
+      "subnetNames": ["myfirstvnet/web1", "myfirstvnet/web2", "myfirstvnet/db1", "myfirstvnet/db2"]
   },
   "resources": [ 
       {
@@ -33,57 +43,20 @@
       {
           "type": "Microsoft.Network/virtualNetworks/subnets",
           "apiVersion": "2020-11-01",
-          "name": "myfirstvnet/web1",
+          "name": "[variables('subnetNames')[copyIndex()]]",
           "properties": {
-              "addressPrefix": "192.168.0.0/24"
+              "addressPrefix": "[parameters('subnetCidrRanges')[copyIndex()]]"
           },
           // adding explicit dependency on virtual network i.e. subnet wil not be 
           //created until virtual network is ready
           "dependsOn": [
               "[resourceId('Microsoft.Network/virtualNetworks','myfirstvnet')]"
-          ]
-      },
-      {
-          "type": "Microsoft.Network/virtualNetworks/subnets",
-          "apiVersion": "2020-11-01",
-          "name": "myfirstvnet/web2",
-          "properties": {
-              "addressPrefix": "192.168.1.0/24"
-          },
-          // adding explicit dependency on virtual network i.e. subnet wil not be 
-          //created until virtual network is ready
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks','myfirstvnet')]",
-              "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'myfirstvnet', 'web1')]"
-          ]
-      },
-      {
-          "type": "Microsoft.Network/virtualNetworks/subnets",
-          "apiVersion": "2020-11-01",
-          "name": "myfirstvnet/db1",
-          "properties": {
-              "addressPrefix": "192.168.2.0/24"
-          },
-          // adding explicit dependency on virtual network i.e. subnet wil not be 
-          //created until virtual network is ready
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks','myfirstvnet')]",
-              "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'myfirstvnet', 'web2')]"
-          ]
-      },
-      {
-          "type": "Microsoft.Network/virtualNetworks/subnets",
-          "apiVersion": "2020-11-01",
-          "name": "myfirstvnet/db2",
-          "properties": {
-              "addressPrefix": "192.168.3.0/24"
-          },
-          // adding explicit dependency on virtual network i.e. subnet wil not be 
-          //created until virtual network is ready
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks','myfirstvnet')]",
-              "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'myfirstvnet', 'db1')]"
-          ]
+          ],
+          "copy": {
+              "name": "subnet copy",
+              "count": 4,
+              "mode": "Serial"
+          }
       }
    ]
 }
