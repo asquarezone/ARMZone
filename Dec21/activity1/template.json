@@ -27,7 +27,10 @@
     },
     "variables": {
         "networkName": "ntier",
-        "subnetNames": [ "web1", "web2", "db1", "db2" ]
+        "subnetNames": [ "web1", "web2", "db1", "db2" ],
+        "publicip": "webpublicip",
+        "nsgWeb": "webnsg",
+        "nicWeb": "webnic"
     },
     "resources": [
         {
@@ -66,7 +69,7 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-11-01",
-            "name": "webnsg",
+            "name": "[variables('nsgWeb')]",
             "location": "[resourceGroup().location]",
             "tags": {
                 "Env": "Development",
@@ -103,6 +106,59 @@
                         }
                     }
                 ]
+            }
+        },
+        {
+            "name": "[variables('publicip')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[variables('publicip')]",
+                "Env": "Development",
+                "CreatedBy": "ARM"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "qtazure"
+                }
+            }
+        },
+        {
+            "name": "[variables('nicWeb')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "[variables('nicWeb')]",
+                "Env": "Development",
+                "CreatedBy": "ARM"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('networkName'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgWeb'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicip'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('networkName'), variables('subnetNames')[0])]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicip'))]"
+                            }
+
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgWeb'))]"
+                }
             }
         }
     ]
