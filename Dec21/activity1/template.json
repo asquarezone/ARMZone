@@ -22,6 +22,25 @@
                 "description": "subnet cidr ranges"
             },
             "defaultValue": [ "192.168.0.0/24", "192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24" ]
+        },
+        "adminUserName": {
+            "type": "string",
+            "metadata": {
+                "description": "UserName"
+            }
+        },
+        "adminPassword": {
+            "type": "string",
+            "metadata": {
+                "description": "Password"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of VM"
+            },
+            "defaultValue": "Standard_B1s"
         }
 
     },
@@ -30,7 +49,8 @@
         "subnetNames": [ "web1", "web2", "db1", "db2" ],
         "publicip": "webpublicip",
         "nsgWeb": "webnsg",
-        "nicWeb": "webnic"
+        "nicWeb": "webnic",
+        "vmWeb1Name": "web1vm"
     },
     "resources": [
         {
@@ -158,6 +178,51 @@
                 ],
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgWeb'))]"
+                }
+            }
+        },
+        {
+            "name": "[variables('vmWeb1Name')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2021-03-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('nicWeb'))]"
+            ],
+            "tags": {
+                "displayName": "[variables('vmWeb1Name')]",
+                "Env": "Development",
+                "CreatedBy": "ARM"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('vmWeb1Name')]",
+                    "adminUsername": "[parameters('adminUserName')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-focal",
+                        "sku": "20_04-lts-gen2",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        }
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicWeb'))]"
+                        }
+                    ]
                 }
             }
         }
