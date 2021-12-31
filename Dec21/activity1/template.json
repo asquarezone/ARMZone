@@ -1,63 +1,109 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "0.0.0.0",
-  "parameters": {
-      "vnetAddressSpace": {
-          "type": "string",
-          "metadata": {
-              "description": "vnet address space"
-          },
-          "defaultValue": "192.168.0.0/16"
-      },
-      "location": {
-          "type": "string",
-          "metadata": {
-              "description": "Region to create resources"
-          },
-          "defaultValue" : "[resourceGroup().location]"
-      },
-      "subnetCidrRanges": {
-          "type": "array",
-          "metadata": {
-              "description": "subnet cidr ranges"
-          },
-          "defaultValue": ["192.168.0.0/24", "192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24"]
-      }
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.0",
+    "parameters": {
+        "vnetAddressSpace": {
+            "type": "string",
+            "metadata": {
+                "description": "vnet address space"
+            },
+            "defaultValue": "192.168.0.0/16"
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "Region to create resources"
+            },
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "subnetCidrRanges": {
+            "type": "array",
+            "metadata": {
+                "description": "subnet cidr ranges"
+            },
+            "defaultValue": [ "192.168.0.0/24", "192.168.1.0/24", "192.168.2.0/24", "192.168.3.0/24" ]
+        }
 
-  },
-  "variables": {
-      "networkName": "ntier",
-      "subnetNames": ["web1", "web2", "db1", "db2"]
-  },
-  "resources": [ 
-      {
-          "type": "Microsoft.Network/virtualNetworks",
-          "apiVersion": "2020-11-01",
-          "name": "[variables('networkName')]",
-          "location": "[parameters('location')]",
-          "properties": {
-              "addressSpace": {
-                  "addressPrefixes": ["[parameters('vnetAddressSpace')]"]
-              }
-          }
-      },
-      {
-          "type": "Microsoft.Network/virtualNetworks/subnets",
-          "apiVersion": "2020-11-01",
-          "name": "[concat(variables('networkName'), '/', variables('subnetNames')[copyIndex()])]",
-          "properties": {
-              "addressPrefix": "[parameters('subnetCidrRanges')[copyIndex()]]"
-          },
-          // adding explicit dependency on virtual network i.e. subnet wil not be 
-          //created until virtual network is ready
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/virtualNetworks',variables('networkName'))]"
-          ],
-          "copy": {
-              "name": "subnet copy",
-              "count": 4,
-              "mode": "Serial"
-          }
-      }
-   ]
+    },
+    "variables": {
+        "networkName": "ntier",
+        "subnetNames": [ "web1", "web2", "db1", "db2" ]
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('networkName')]",
+            "location": "[parameters('location')]",
+            "tags": {
+                "Env": "Development",
+                "CreatedBy": "ARM"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [ "[parameters('vnetAddressSpace')]" ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(variables('networkName'), '/', variables('subnetNames')[copyIndex()])]",
+            "properties": {
+                "addressPrefix": "[parameters('subnetCidrRanges')[copyIndex()]]"
+            },
+            // adding explicit dependency on virtual network i.e. subnet wil not be 
+            //created until virtual network is ready
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks',variables('networkName'))]"
+            ],
+            "copy": {
+                "name": "subnet copy",
+                "count": 4,
+                "mode": "Serial"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-11-01",
+            "name": "webnsg",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "Env": "Development",
+                "CreatedBy": "ARM"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "openssh",
+                        "properties": {
+                            "priority": 300,
+                            "description": "open ssh for everyone",
+                            "protocol": "Tcp",
+                            "access": "Allow",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "22",
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "openhttp",
+                        "properties": {
+                            "priority": 310,
+                            "description": "open http for everyone",
+                            "protocol": "Tcp",
+                            "access": "Allow",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "80",
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
 }
