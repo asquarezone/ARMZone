@@ -41,8 +41,21 @@
                 "description": "Size of VM"
             },
             "defaultValue": "Standard_B1s"
+        },
+        "startIp": {
+            "type": "string",
+            "metadata": {
+                "description": "This is start ip range for firewall"
+            },
+            "defaultValue": "192.168.0.0"
+        },
+        "endIp": {
+            "type": "string",
+            "metadata": {
+                "description": "This is start ip range for firewall"
+            },
+            "defaultValue": "192.168.255.255"
         }
-
     },
     "variables": {
         "networkName": "ntier",
@@ -73,7 +86,13 @@
             "apiVersion": "2020-11-01",
             "name": "[concat(variables('networkName'), '/', variables('subnetNames')[copyIndex()])]",
             "properties": {
-                "addressPrefix": "[parameters('subnetCidrRanges')[copyIndex()]]"
+                "addressPrefix": "[parameters('subnetCidrRanges')[copyIndex()]]",
+                "serviceEndpoints": [
+                    {
+                        "locations": ["[resourceGroup().location]"],
+                        "service": "Microsoft.Sql"
+                    }
+                ]
             },
             // adding explicit dependency on virtual network i.e. subnet wil not be 
             //created until virtual network is ready
@@ -85,6 +104,7 @@
                 "count": 4,
                 "mode": "Serial"
             }
+
         },
         {
             "type": "Microsoft.Network/networkSecurityGroups",
@@ -225,6 +245,59 @@
                     ]
                 }
             }
+        },
+        {
+            "name": "qtsqlsrvarm",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2014-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "qtsqlsrvarm"
+            },
+            "properties": {
+                "administratorLogin": "qtdevops",
+                "administratorLoginPassword": "motherindia@123"
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2014-04-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', 'qtsqlsrvarm')]"
+                    ],
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllVNetIps",
+                    "properties": {
+                        "startIpAddress": "[parameters('startIp')]",
+                        "endIpAddress": "[parameters('endIp')]"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "qtsqlsrvarm/qtecommerce",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2014-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "qtecommerce"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', 'qtsqlsrvarm')]"
+            ],
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "edition": "Basic",
+                "maxSizeBytes": "1073741824",
+                "requestedServiceObjectiveName": "Basic",
+                "sampleName": "AdventureWorksLT"
+            }
         }
-    ]
+    ],
+    "outputs": {
+        "publicip": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses',variables('publicip'))).dnsSettings.fqdn]"
+        }
+    }
 }

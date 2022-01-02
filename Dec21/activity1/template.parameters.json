@@ -19,6 +19,12 @@
         },
         "vmSize": {
             "value": "Standard_B1s"
+        },
+        "startIp": {
+            "value": "192.168.0.0"
+        },
+        "endIp": {
+            "value": "192.168.255.255"
         }
     }
 }
