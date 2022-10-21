@@ -25,7 +25,10 @@
             "name": "ntier/web",
             "properties": {
                 "addressPrefix": "192.168.0.0/24"
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+            ]
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
@@ -33,7 +36,11 @@
             "name": "ntier/app",
             "properties": {
                 "addressPrefix": "192.168.1.0/24"
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets','ntier','web')]"
+            ]
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
@@ -41,7 +48,11 @@
             "name": "ntier/db",
             "properties": {
                 "addressPrefix": "192.168.2.0/24"
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets','ntier','app')]"
+            ]
         }
 
     ]
