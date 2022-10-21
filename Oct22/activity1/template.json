@@ -14,35 +14,34 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": ["192.168.0.0/16"]
-                },
-                "subnets": [{
-                    "name": "web",
-                    "type": "Microsoft.Network/virtualNetworks/subnets",
-                    "properties": {
-                        "addressPrefix": "192.168.0.0/24"
-
-                    }
-                }, 
-                {
-                    "name": "app",
-                    "type": "Microsoft.Network/virtualNetworks/subnets",
-                    "properties": {
-                        "addressPrefix": "192.168.1.0/24"
-
-                    }
-                },
-                {
-                    "name": "db",
-                    "type": "Microsoft.Network/virtualNetworks/subnets",
-                    "properties": {
-                        "addressPrefix": "192.168.2.0/24"
-
-                    }
                 }
-                ]
 
             }
 
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-11-01",
+            "name": "ntier/web",
+            "properties": {
+                "addressPrefix": "192.168.0.0/24"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-11-01",
+            "name": "ntier/app",
+            "properties": {
+                "addressPrefix": "192.168.1.0/24"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-11-01",
+            "name": "ntier/db",
+            "properties": {
+                "addressPrefix": "192.168.2.0/24"
+            }
         }
 
     ]
