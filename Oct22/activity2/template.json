@@ -1,6 +1,15 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "0.0.0.1",
+    "parameters": {
+        "vnet-cidr": {
+            "type": "string",
+            "metadata": {
+                "description": "address space of vnet"
+            },
+            "defaultValue": "10.0.0.0/16"
+        }
+    },
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
@@ -54,7 +63,10 @@
                     }
                 ]
 
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+            ]
         },
         {
             "name": "appnsg",
@@ -69,7 +81,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "22",
-                            "sourceAddressPrefix": "*",
+                            "sourceAddressPrefix": "[parameters('vnet-cidr')]",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 300,
@@ -82,7 +94,7 @@
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "8080",
-                            "sourceAddressPrefix": "*",
+                            "sourceAddressPrefix": "[parameters('vnet-cidr')]",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 310,
@@ -90,6 +102,25 @@
                         }
                     }
                 ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+            ]
+        },
+        {
+            "name": "ntier",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "ntier-vnet"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnet-cidr')]"
+                    ]
+                }
             }
         }
     ]
