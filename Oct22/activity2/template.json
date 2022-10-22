@@ -1,0 +1,60 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "0.0.0.1",
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2020-11-01",
+            "name": "webnsg",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "project": "qtlearning",
+                "env": "dev"
+            },
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "allowssh",
+                        "properties": {
+                            "access": "Allow",
+                            "protocol": "Tcp",
+                            "priority": 300,
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "destinationAddressPrefix": "*"
+                        }
+                    },
+                    {
+                        "name": "allowhttp",
+                        "properties": {
+                            "access": "Allow",
+                            "protocol": "Tcp",
+                            "priority": 310,
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "destinationAddressPrefix": "*"
+                        }
+                    },
+                    {
+                        "name": "allowhttps",
+                        "properties": {
+                            "access": "Allow",
+                            "protocol": "Tcp",
+                            "priority": 320,
+                            "direction": "Inbound",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "443",
+                            "destinationAddressPrefix": "*"
+                        }
+                    }
+                ]
+
+            }
+        }
+    ]
+}
