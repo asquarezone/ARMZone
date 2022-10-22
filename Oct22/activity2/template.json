@@ -8,6 +8,28 @@
                 "description": "address space of vnet"
             },
             "defaultValue": "10.0.0.0/16"
+        },
+        "subnet-cidrs": {
+            "type": "array",
+            "metadata": {
+                "description": "cidr ranges of subnet"
+            },
+            "defaultValue": [
+                "10.0.0.0/24",
+                "10.0.1.0/24",
+                "10.0.2.0/24"
+            ]
+        },
+        "subnet-names": {
+            "type": "array",
+            "metadata": {
+                "description": "subnet names"
+            },
+            "defaultValue": [
+                "web",
+                "app",
+                "db"
+            ]
         }
     },
     "resources": [
@@ -121,6 +143,22 @@
                         "[parameters('vnet-cidr')]"
                     ]
                 }
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2020-11-01",
+            "name": "[concat('ntier','/',parameters('subnet-names')[copyIndex()])]",
+            "properties": {
+                "addressPrefix": "[parameters('subnet-cidrs')[copyIndex()]]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+            ],
+            "copy": {
+                "name": "subnetcopy",
+                "count": "[length(parameters('subnet-cidrs'))]",
+                "mode": "Serial"
             }
         }
     ]
