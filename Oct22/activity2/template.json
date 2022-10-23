@@ -30,6 +30,18 @@
                 "app",
                 "db"
             ]
+        },
+        "sqlusername": {
+            "type": "string",
+            "metadata": {
+                "description": "username for the database server"
+            }
+        },
+        "sqlpassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "password for database server"
+            }
         }
     },
     "resources": [
@@ -160,6 +172,54 @@
                 "count": "[length(parameters('subnet-cidrs'))]",
                 "mode": "Serial"
             }
+        },
+        {
+            "name": "qtdbserverfromarm",
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2022-02-01-preview",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "qtdbserverfromarm"
+            },
+            "properties": {
+                "administratorLogin": "[parameters('sqlusername')]",
+                "administratorLoginPassword": "[parameters('sqlpassword')]"
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "2014-04-01",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers', 'qtdbserverfromarm')]"
+                    ],
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "properties": {
+                        "startIpAddress": "0.0.0.0",
+                        "endIpAddress": "255.255.255.255"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "qtdbserverfromarm/sampledb",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2022-02-01-preview",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "sampledb"
+            },
+            "sku": {
+                "name": "Basic"
+                
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', 'qtdbserverfromarm')]"
+            ],
+            "properties": {
+                
+            }
+            
         }
     ]
 }
