@@ -20,10 +20,16 @@
             ]
         },
         "sqlusername": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "" 
         },
         "sqlpassword": {
-            "value": "" // TODO: Fill in parameter value
+            "value": "" 
+        },
+        "vmusername": {
+            "value": "" 
+        },
+        "vmpassword": {
+            "value": "" 
         }
     }
 }

@@ -42,14 +42,37 @@
             "metadata": {
                 "description": "password for database server"
             }
+        },
+        "vmusername": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }
+        },
+        "vmpassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "description"
+            }
         }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+        "httpport": "80",
+        "sshport": "22",
+        "appport": "80",
+        "httpsport": "443",
+        "protocol": "Tcp",
+        "anywhere": "*",
+        "allow": "Allow",
+        "inbound": "Inbound"
     },
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-11-01",
             "name": "webnsg",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "tags": {
                 "project": "qtlearning",
                 "env": "dev"
@@ -59,40 +82,40 @@
                     {
                         "name": "allowssh",
                         "properties": {
-                            "access": "Allow",
-                            "protocol": "Tcp",
+                            "access": "[variables('allow')]",
+                            "protocol": "[variables('protocol')]",
                             "priority": 300,
-                            "direction": "Inbound",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "22",
-                            "destinationAddressPrefix": "*"
+                            "direction": "[variables('inbound')]",
+                            "sourceAddressPrefix": "[variables('anywhere')]",
+                            "sourcePortRange": "[variables('anywhere')]",
+                            "destinationPortRange": "[variables('sshport')]",
+                            "destinationAddressPrefix": "[variables('anywhere')]"
                         }
                     },
                     {
                         "name": "allowhttp",
                         "properties": {
-                            "access": "Allow",
-                            "protocol": "Tcp",
+                            "access": "[variables('allow')]",
+                            "protocol": "[variables('protocol')]",
                             "priority": 310,
-                            "direction": "Inbound",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "80",
+                            "direction": "[variables('inbound')]",
+                            "sourceAddressPrefix": "[variables('anywhere')]",
+                            "sourcePortRange": "[variables('anywhere')]",
+                            "destinationPortRange": "[variables('httpport')]",
                             "destinationAddressPrefix": "*"
                         }
                     },
                     {
                         "name": "allowhttps",
                         "properties": {
-                            "access": "Allow",
-                            "protocol": "Tcp",
+                            "access": "[variables('allow')]",
+                            "protocol": "[variables('protocol')]",
                             "priority": 320,
-                            "direction": "Inbound",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "443",
-                            "destinationAddressPrefix": "*"
+                            "direction": "[variables('inbound')]",
+                            "sourceAddressPrefix": "[variables('anywhere')]",
+                            "sourcePortRange": "[variables('anywhere')]",
+                            "destinationPortRange": "[variables('httpsport')]",
+                            "destinationAddressPrefix": "[variables('anywhere')]"
                         }
                     }
                 ]
@@ -106,33 +129,33 @@
             "name": "appnsg",
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-11-01",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "properties": {
                 "securityRules": [
                     {
                         "name": "allowssh",
                         "properties": {
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "22",
+                            "protocol": "[variables('protocol')]",
+                            "sourcePortRange": "[variables('anywhere')]",
+                            "destinationPortRange": "[variables('sshport')]",
                             "sourceAddressPrefix": "[parameters('vnet-cidr')]",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
+                            "destinationAddressPrefix": "[variables('anywhere')]",
+                            "access": "[variables('allow')]",
                             "priority": 300,
-                            "direction": "Inbound"
+                            "direction": "[variables('inbound')]"
                         }
                     },
                     {
                         "name": "allowappport",
                         "properties": {
-                            "protocol": "Tcp",
-                            "sourcePortRange": "*",
-                            "destinationPortRange": "8080",
+                            "protocol": "[variables('protocol')]",
+                            "sourcePortRange": "[variables('anywhere')]",
+                            "destinationPortRange": "[variables('appport')]",
                             "sourceAddressPrefix": "[parameters('vnet-cidr')]",
-                            "destinationAddressPrefix": "*",
-                            "access": "Allow",
+                            "destinationAddressPrefix": "[variables('anywhere')]",
+                            "access": "[variables('allow')]",
                             "priority": 310,
-                            "direction": "Inbound"
+                            "direction": "[variables('inbound')]"
                         }
                     }
                 ]
@@ -145,7 +168,7 @@
             "name": "ntier",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2020-11-01",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "tags": {
                 "displayName": "ntier-vnet"
             },
@@ -177,7 +200,7 @@
             "name": "qtdbserverfromarm",
             "type": "Microsoft.Sql/servers",
             "apiVersion": "2022-02-01-preview",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "tags": {
                 "displayName": "qtdbserverfromarm"
             },
@@ -192,7 +215,7 @@
                     "dependsOn": [
                         "[resourceId('Microsoft.Sql/servers', 'qtdbserverfromarm')]"
                     ],
-                    "location": "[resourceGroup().location]",
+                    "location": "[variables('location')]",
                     "name": "AllowAllWindowsAzureIps",
                     "properties": {
                         "startIpAddress": "0.0.0.0",
@@ -205,21 +228,121 @@
             "name": "qtdbserverfromarm/sampledb",
             "type": "Microsoft.Sql/servers/databases",
             "apiVersion": "2022-02-01-preview",
-            "location": "[resourceGroup().location]",
+            "location": "[variables('location')]",
             "tags": {
                 "displayName": "sampledb"
             },
             "sku": {
                 "name": "Basic"
-                
+
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Sql/servers', 'qtdbserverfromarm')]"
             ],
             "properties": {
-                
+
             }
-            
+        },
+        {
+            "name": "webip",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2020-11-01",
+            "location": "[variables('location')]",
+            "tags": {
+                "displayName": "webip"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "qtwebapp"
+                }
+            }
+        },
+        {
+            "name": "webnic",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "webnic"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets','ntier',parameters('subnet-names')[0])]",
+                "[resourceId('Microsoft.Network/publicIPAddresses','webip')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', parameters('subnet-names')[0])]",
+                                "properties": {
+                                    "networkSecurityGroups": {
+                                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
+                                    }
+                                }
+                            },
+                            "publicIPAddress": {
+                                "id":"[resourceId('Microsoft.Network/publicIPAddresses','webip')]"
+                            }
+                        }
+                    }
+                ]
+            }
+
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2022-03-01",
+            "name": "qtwebvm",
+            "location": "[variables('location')]",
+            "properties": {
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces','webnic')]",
+                            "properties": {
+                                "deleteOption": "Delete"
+                            }
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "adminPassword": "[parameters('vmpassword')]",
+                    "adminUsername": "[parameters('vmusername')]"
+                },
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        }
+                    },
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "UbuntuServer",
+                        "sku": "18.04-LTS",
+                        "version": "latest"
+                    }
+                }
+
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces','webnic')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
+
+
+            ]
+
         }
+
+
     ]
 }
