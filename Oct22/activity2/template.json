@@ -281,7 +281,7 @@
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', parameters('subnet-names')[0])]",
                                 "properties": {
-                                    "networkSecurityGroups": {
+                                    "networkSecurityGroup": {
                                         "id": "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
                                     }
                                 }
@@ -312,6 +312,7 @@
                     ]
                 },
                 "osProfile": {
+                    "computerName": "qtwebvm",
                     "adminPassword": "[parameters('vmpassword')]",
                     "adminUsername": "[parameters('vmusername')]"
                 },
