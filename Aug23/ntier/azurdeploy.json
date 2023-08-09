@@ -1,0 +1,41 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2022-09-01",
+            "name": "ntier",
+            "location": "East US",
+            "tags": {
+                "env": "dev"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [ "10.10.0.0/16" ]
+                },
+                "subnets": [
+                    {
+                        "name": "web",
+                        "properties": {
+                            "addressPrefix": "10.10.0.0/24"
+                        }
+                    },
+                    {
+                        "name": "app",
+                        "properties": {
+                            "addressPrefix": "10.10.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "db",
+                        "properties": {
+                            "addressPrefix": "10.10.2.0/24"
+                        }
+                    }
+                ]
+
+            }
+        }
+    ]
+}
