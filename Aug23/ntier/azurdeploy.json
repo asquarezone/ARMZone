@@ -1,6 +1,23 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkRange": {
+            "type": "string",
+            "metadata": {
+                "description": "This defines the address space of network"
+            },
+            "defaultValue": "10.10.0.0/16"
+        },
+        "subnetRanges": {
+            "type": "array",
+            "metadata": {
+                "description": "This describes subnet ranges"
+            },
+            "defaultValue": ["10.10.0.0/24","10.10.1.0/24", "10.10.2.0/24"]
+        }
+
+    },
     "resources": [
         {
             "type": "Microsoft.Network/virtualNetworks",
@@ -12,25 +29,25 @@
             },
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": [ "10.10.0.0/16" ]
+                    "addressPrefixes": [ "[parameters('networkRange')]" ]
                 },
                 "subnets": [
                     {
                         "name": "web",
                         "properties": {
-                            "addressPrefix": "10.10.0.0/24"
+                            "addressPrefix": "[parameters('subnetRanges')[0]]"
                         }
                     },
                     {
                         "name": "app",
                         "properties": {
-                            "addressPrefix": "10.10.1.0/24"
+                            "addressPrefix": "[parameters('subnetRanges')[1]]"
                         }
                     },
                     {
                         "name": "db",
                         "properties": {
-                            "addressPrefix": "10.10.2.0/24"
+                            "addressPrefix": "[parameters('subnetRanges')[2]]"
                         }
                     }
                 ]
