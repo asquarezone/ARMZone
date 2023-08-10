@@ -49,7 +49,10 @@
             "properties": {
                 "addressPrefix": "[parameters('subnetRanges')[1]]"
             },
-            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"]
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', 'web')]"
+            ]
         },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
@@ -58,7 +61,10 @@
             "properties": {
                 "addressPrefix": "[parameters('subnetRanges')[2]]"
             },
-            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"]
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', 'app')]"
+            ]
         }
 
     ]
