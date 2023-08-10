@@ -6,7 +6,7 @@
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2022-09-01",
             "name": "ntier",
-            "location": "East US",
+            "location": "[resourceGroup().location]",
             "tags": {
                 "env": "dev"
             },
