@@ -30,29 +30,36 @@
             "properties": {
                 "addressSpace": {
                     "addressPrefixes": [ "[parameters('networkRange')]" ]
-                },
-                "subnets": [
-                    {
-                        "name": "web",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnetRanges')[0]]"
-                        }
-                    },
-                    {
-                        "name": "app",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnetRanges')[1]]"
-                        }
-                    },
-                    {
-                        "name": "db",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnetRanges')[2]]"
-                        }
-                    }
-                ]
-
+                }
             }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2022-09-01",
+            "name": "ntier/web",
+            "properties": {
+                "addressPrefix": "[parameters('subnetRanges')[0]]"
+            }, 
+            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2022-09-01",
+            "name": "ntier/app",
+            "properties": {
+                "addressPrefix": "[parameters('subnetRanges')[1]]"
+            },
+            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"]
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2022-09-01",
+            "name": "ntier/db",
+            "properties": {
+                "addressPrefix": "[parameters('subnetRanges')[2]]"
+            },
+            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"]
         }
+
     ]
 }
