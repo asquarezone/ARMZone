@@ -14,18 +14,50 @@
             "metadata": {
                 "description": "This describes subnet ranges"
             },
-            "defaultValue": ["10.10.0.0/24","10.10.1.0/24", "10.10.2.0/24"]
+            "defaultValue": [ "10.10.0.0/24", "10.10.1.0/24", "10.10.2.0/24" ]
         },
         "subnetNames": {
             "type": "array",
             "metadata": {
                 "description": "This provides subnet names"
             },
-            "defaultValue": ["web", "app", "db"]
-
+            "defaultValue": [ "web", "app", "db" ]
+        },
+        "appnsginfo": {
+            "type": "object",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": {
+                "name": "appnsg",
+                "securityrules": [
+                    {
+                        "name": "openhttps",
+                        "access": "Allow",
+                        "description": "Open https port",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "443",
+                        "direction": "Inbound",
+                        "priority": 300,
+                        "protocol": "Tcp",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*"
+                    },
+                    {
+                        "name": "openssh",
+                        "access": "Allow",
+                        "description": "Open ssh port",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "22",
+                        "direction": "Inbound",
+                        "priority": 310,
+                        "protocol": "Tcp",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*"
+                    }
+                ]
+            }
         }
-
-
     },
     "resources": [
         {
@@ -48,8 +80,9 @@
             "name": "[format('ntier/{0}',parameters('subnetNames')[copyIndex()])]",
             "properties": {
                 "addressPrefix": "[parameters('subnetRanges')[copyIndex()]]"
-            }, 
-            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks','ntier')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks','ntier')]"
             ],
             "copy": {
                 "name": "subnetCopy",
@@ -109,6 +142,36 @@
                 ]
 
             }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-09-01",
+            "name": "appnsg",
+            "location": "[resourceGroup().location]",
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2022-09-01",
+            "name": "[format('{0}/{1}',parameters('appnsginfo').name,parameters('appnsginfo').securityrules[copyIndex()].name)]",
+            "properties": {
+                "access": "[parameters('appnsginfo').securityrules[copyIndex()].access]",
+                "description": "[parameters('appnsginfo').securityrules[copyIndex()].description]",
+                "destinationAddressPrefix": "[parameters('appnsginfo').securityrules[copyIndex()].destinationAddressPrefix]" ,
+                "destinationPortRange": "[parameters('appnsginfo').securityrules[copyIndex()].destinationPortRange]",
+                "direction": "[parameters('appnsginfo').securityrules[copyIndex()].direction]",
+                "priority": "[parameters('appnsginfo').securityrules[copyIndex()].priority]",
+                "protocol": "[parameters('appnsginfo').securityrules[copyIndex()].protocol]",
+                "sourceAddressPrefix": "[parameters('appnsginfo').securityrules[copyIndex()].sourceAddressPrefix]",
+                "sourcePortRange": "[parameters('appnsginfo').securityrules[copyIndex()].sourcePortRange]"
+            },
+            "copy": {
+                "count": "[length(parameters('appnsginfo').securityrules)]",
+                "name": "appnsgsrcopy",
+                "mode": "Serial"
+            },
+            "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', 'appnsg')]"]
+
         }
 
     ]
