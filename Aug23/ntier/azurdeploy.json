@@ -49,11 +49,65 @@
             "properties": {
                 "addressPrefix": "[parameters('subnetRanges')[copyIndex()]]"
             }, 
-            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"],
+            "dependsOn": ["[resourceId('Microsoft.Network/virtualNetworks','ntier')]"
+            ],
             "copy": {
                 "name": "subnetCopy",
                 "count": "[length(parameters('subnetRanges'))]",
                 "mode": "Serial"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2022-09-01",
+            "name": "webnsg",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "AllowHttps",
+                        "properties": {
+                            "access": "Allow",
+                            "description": "Open https port",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "443",
+                            "direction": "Inbound",
+                            "priority": 300,
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*"
+                        }
+                    },
+                    {
+                        "name": "Allowssh",
+                        "properties": {
+                            "access": "Allow",
+                            "description": "Open https port",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "22",
+                            "direction": "Inbound",
+                            "priority": 310,
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*"
+                        }
+                    },
+                    {
+                        "name": "AllowHttp",
+                        "properties": {
+                            "access": "Allow",
+                            "description": "Open https port",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "80",
+                            "direction": "Inbound",
+                            "priority": 320,
+                            "protocol": "Tcp",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*"
+                        }
+                    }
+                ]
+
             }
         }
 
