@@ -157,7 +157,7 @@
             "properties": {
                 "access": "[parameters('appnsginfo').securityrules[copyIndex()].access]",
                 "description": "[parameters('appnsginfo').securityrules[copyIndex()].description]",
-                "destinationAddressPrefix": "[parameters('appnsginfo').securityrules[copyIndex()].destinationAddressPrefix]" ,
+                "destinationAddressPrefix": "[parameters('appnsginfo').securityrules[copyIndex()].destinationAddressPrefix]",
                 "destinationPortRange": "[parameters('appnsginfo').securityrules[copyIndex()].destinationPortRange]",
                 "direction": "[parameters('appnsginfo').securityrules[copyIndex()].direction]",
                 "priority": "[parameters('appnsginfo').securityrules[copyIndex()].priority]",
@@ -170,9 +170,51 @@
                 "name": "appnsgsrcopy",
                 "mode": "Serial"
             },
-            "dependsOn": ["[resourceId('Microsoft.Network/networkSecurityGroups', 'appnsg')]"]
+            "dependsOn": [ "[resourceId('Microsoft.Network/networkSecurityGroups', 'appnsg')]" ]
 
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2022-09-01",
+            "name": "webip",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Static"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2022-09-01",
+            "name": "webnic",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
+                },
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses','webip')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets','ntier',parameters('subnetNames')[0])]"
+                            }
+
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets','ntier',parameters('subnetNames')[0])]",
+                "[resourceId('Microsoft.Network/publicIPAddresses','webip')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
+            ]
         }
-
     ]
 }
