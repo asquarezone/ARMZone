@@ -1,0 +1,46 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkRange": {
+            "value": "10.10.0.0/16"
+        },
+        "subnetRanges": {
+            "value": [ "10.10.0.0/24", "10.10.1.0/24", "10.10.2.0/24" ]
+        },
+        "subnetNames": {
+            "value": [ "web", "app", "db" ]
+        },
+        "appnsginfo": {
+            "value": {
+                "name": "appnsg",
+                "securityrules": [
+                    {
+                        "name": "openhttps",
+                        "access": "Allow",
+                        "description": "Open https port",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "443",
+                        "direction": "Inbound",
+                        "priority": 300,
+                        "protocol": "Tcp",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*"
+                    },
+                    {
+                        "name": "openssh",
+                        "access": "Allow",
+                        "description": "Open ssh port",
+                        "destinationAddressPrefix": "*",
+                        "destinationPortRange": "22",
+                        "direction": "Inbound",
+                        "priority": 310,
+                        "protocol": "Tcp",
+                        "sourceAddressPrefix": "*",
+                        "sourcePortRange": "*"
+                    }
+                ]
+            }
+        }
+    }
+}
