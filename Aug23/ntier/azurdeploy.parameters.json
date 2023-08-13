@@ -41,6 +41,18 @@
                     }
                 ]
             }
+        },
+        "password": {
+            "value": "" 
+        },
+        "username": {
+            "value": "Dell"
+        },
+        "vmSize": {
+            "value": "Standard_B1s"
+        },
+        "ubuntuOSVersion": {
+            "value": "Ubuntu-2204"
         }
     }
 }
