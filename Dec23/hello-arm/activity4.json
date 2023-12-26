@@ -14,7 +14,7 @@
             "metadata": {
                 "description": "cidr ranges of subnets"
             },
-            "defaultValue": ["10.100.0.0/24","10.100.1.0/24","10.100.2.0/24"]
+            "defaultValue": [ "10.100.0.0/24", "10.100.1.0/24", "10.100.2.0/24" ]
         }
     },
     "functions": [],
@@ -55,6 +55,73 @@
                     }
                 ]
             }
+        },
+        {
+            "name": "webnsg",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "openssh",
+                        "properties": {
+                            "description": "open ssh from anywhere",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1000,
+                            "direction": "Inbound"
+                        }
+                    },
+                    {
+                        "name": "openhttp",
+                        "properties": {
+                            "description": "open ssh from anywhere",
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "*",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 1010,
+                            "direction": "Inbound"
+                        }
+                    }
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks','ntier')]"
+            ]
+        },
+        {
+            "name": "businessnsg",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks','ntier')]"
+            ]
+        },
+        {
+            "name": "datansg",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                ]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks','ntier')]"
+            ]
         }
     ],
     "outputs": {}
