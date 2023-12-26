@@ -1,0 +1,61 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ntier-net-range": {
+            "type": "string",
+            "metadata": {
+                "description": "range of ntier network"
+            },
+            "defaultValue": "10.100.0.0/16"
+        },
+        "subnet-ranges": {
+            "type": "array",
+            "metadata": {
+                "description": "cidr ranges of subnets"
+            },
+            "defaultValue": ["10.100.0.0/24","10.100.1.0/24","10.100.2.0/24"]
+        }
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "name": "ntier",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "ntier"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('ntier-net-range')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "web",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet-ranges')[0]]"
+                        }
+                    },
+                    {
+                        "name": "business",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet-ranges')[1]]"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "properties": {
+                            "addressPrefix": "[parameters('subnet-ranges')[2]]"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {}
+}
