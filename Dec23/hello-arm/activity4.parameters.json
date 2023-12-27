@@ -1,0 +1,12 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ntier-net-range": {
+            "value": "10.100.0.0/16"
+        },
+        "subnet-ranges": {
+            "value": ["10.100.0.0/24","10.100.1.0/24","10.100.2.0/24"]
+        }
+    }
+}

@@ -1,0 +1,54 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vnet-address": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            }, 
+            "defaultValue": "10.100.0.0/16"
+        }
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "name": "test",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "test"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('vnet-address')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "web",
+                        "properties": {
+                            "addressPrefix": "10.100.0.0/24"
+                        }
+                    },
+                    {
+                        "name": "business",
+                        "properties": {
+                            "addressPrefix": "10.100.1.0/24"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "properties": {
+                            "addressPrefix": "10.100.2.0/24"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {}
+}
