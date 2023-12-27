@@ -136,12 +136,12 @@
             }
         },
         {
-            "name": "networkInterface1",
+            "name": "webnic",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2023-04-01",
             "location": "[resourceGroup().location]",
             "tags": {
-                "displayName": "networkInterface1"
+                "displayName": "webnic"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
@@ -165,6 +165,51 @@
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups','webnsg')]"
                 }
             }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-03-01",
+            "name": "webvm",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces','webnic')]"
+                        } 
+                         
+                    ]
+                },
+                "osProfile": {
+                    "adminPassword": "armtemplatedemo@123",
+                    "adminUsername": "Dell",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false
+                    },
+                    "computerName": "ltdemo1"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
+                        }
+                    },
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-jammy",
+                        "sku": "22_04-lts-gen2",
+                        "version": "latest"
+                    }
+                }
+
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces','webnic')]"
+            ]
         }
     ],
     "outputs": {}
