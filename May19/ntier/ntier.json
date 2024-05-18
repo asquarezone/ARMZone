@@ -1,41 +1,67 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkAddress": {
+            "type": "array",
+            "metadata": {
+                "description": "network address range"
+            }, 
+            "defaultValue": ["10.0.0.0/16"]
+        },
+        "subnetAddressList": {
+            "type": "array",
+            "metadata": {
+                "description": "subnet cidr ranges"
+            },
+            "defaultValue": ["10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24"]
+        },
+        "subnetNames": {
+            "type": "array",
+            "metadata": {
+                "description": "subnet names"
+            },
+            "defaultValue": ["web", "business", "database"]
+        }
+        
+    },
+    "functions": [],
+    "variables": {},
     "resources": [
         {
+            "name": "ntier",
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2023-04-01",
-            "name": "ntier",
-            "location": "East US",
+            "location": "[resourceGroup().location]",
             "tags": {
-                "Environment": "Dev",
-                "CreatedBy": "ARM Templates"
+                "displayName": "ntier"
             },
             "properties": {
                 "addressSpace": {
-                    "addressPrefixes": ["192.168.0.0/16"]
+                    "addressPrefixes": "[parameters('networkAddress')]"
                 },
                 "subnets": [
                     {
-                        "name": "web",
+                        "name": "[parameters('subnetNames')[0]]",
                         "properties": {
-                            "addressPrefix": "192.168.0.0/24"
+                            "addressPrefix": "[parameters('subnetAddressList')[0]]"
                         }
                     },
                     {
-                        "name": "app",
+                        "name": "[parameters('subnetNames')[1]]",
                         "properties": {
-                            "addressPrefix": "192.168.1.0/24"
+                            "addressPrefix": "[parameters('subnetAddressList')[1]]"
                         }
                     },
                     {
-                        "name": "db",
+                        "name": "[parameters('subnetNames')[2]]",
                         "properties": {
-                            "addressPrefix": "192.168.2.0/24"
+                            "addressPrefix": "[parameters('subnetAddressList')[2]]"
                         }
                     }
                 ]
             }
         }
-     ]
-  }
+    ],
+    "outputs": {}
+}
