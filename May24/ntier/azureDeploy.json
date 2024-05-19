@@ -1,0 +1,64 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkAddressSpace": {
+            "type": "string",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": "10.0.0.0/16"
+        },
+        "subnetNames": {
+            "type": "array",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": [ "web", "app" ]
+        },
+        "subnetAddressSpaces": {
+            "type": "array",
+            "metadata": {
+                "description": "description"
+            },
+            "defaultValue": [ "10.0.0.0/24", "10.0.1.0/24" ]
+
+        }
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2023-04-01",
+            "name": "ntier",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "Enviroment": "Dev",
+                "CreatedBy": "ARM Template",
+                "Project": "Preschool"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [ "[parameters('networkAddressSpace')]" ]
+                }
+            }
+
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2023-04-01",
+            "name": "[format('ntier/{0}',parameters('subnetNames')[copyIndex()])]",
+            "properties": {
+                "addressPrefix": "[parameters('subnetAddressSpaces')[copyIndex()]]"
+            },
+
+            "copy": {
+                "name": "subnetCopy",
+                "count": "[length(parameters('subnetNames'))]"
+            }
+
+        }
+    ],
+    "outputs": {}
+}
