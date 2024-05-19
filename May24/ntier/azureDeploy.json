@@ -85,6 +85,204 @@
                     }
                 ]
             }
+        },
+        {
+            "name": "[toLower('preschoolstorage')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2023-01-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "preschool Storage Account"
+            },
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "Storage"
+        },
+        {
+            "name": "preschool-PublicIP",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "PublicIPAddress"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower('preschool')]"
+                }
+            }
+        },
+        {
+            "name": "preschool-NetworkInterface",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'preschool-PublicIP')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+            ],
+            "tags": {
+                "displayName": "preschool-NetworkInterface"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'preschool-PublicIP')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', parameters('subnetNames')[0])]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "preschool-1",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-03-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'preschool-NetworkInterface')]"
+            ],
+            "tags": {
+                "displayName": "preschool-1"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "osProfile": {
+                    "computerName": "preschool-1",
+                    "adminUsername": "qtdevops",
+                    "adminPassword": "qualitythought@123"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-jammy",
+                        "sku": "22_04-lts-gen2",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "preschool-OSDisk",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'preschool-NetworkInterface')]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('preschoolstorage'))).primaryEndpoints.blob]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "preschool-PublicIP2",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "PublicIPAddress2"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "[toLower('preschool2')]"
+                }
+            }
+        },
+        {
+            "name": "preschool-NetworkInterface-2",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'preschool-PublicIP2')]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+            ],
+            "tags": {
+                "displayName": "preschool-NetworkInterface"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipConfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'preschool-PublicIP2')]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ntier', parameters('subnetNames')[0])]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "preschool-2",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2023-03-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', 'preschool-NetworkInterface-2')]"
+            ],
+            "tags": {
+                "displayName": "preschool-2"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "osProfile": {
+                    "computerName": "preschool-2",
+                    "adminUsername": "qtdevops",
+                    "adminPassword": "qualitythought@123"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-jammy",
+                        "sku": "22_04-lts-gen2",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "preschool-OSDisk-2",
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'preschool-NetworkInterface-2')]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('preschoolstorage'))).primaryEndpoints.blob]"
+                    }
+                },
+                "userData": "[base64('')]"
+            }
         }
 
 
