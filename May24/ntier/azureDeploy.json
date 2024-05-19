@@ -122,6 +122,8 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', 'preschool-PublicIP')]",
                 "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+                
+
             ],
             "tags": {
                 "displayName": "preschool-NetworkInterface"
@@ -150,6 +152,7 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'preschool-NetworkInterface')]"
+                
             ],
             "tags": {
                 "displayName": "preschool-1"
@@ -188,6 +191,32 @@
                         "enabled": true,
                         "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('preschoolstorage'))).primaryEndpoints.blob]"
                     }
+                }
+            }
+        },
+        {
+            "name": "preschool-1/preschool",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2023-03-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "preschool for Linux VM"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', 'preschool-1')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "https://raw.githubusercontent.com/asquarezone/ARMZone/master/May24/ntier/install.sh"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "sh install.sh"
                 }
             }
         },
@@ -283,9 +312,109 @@
                 },
                 "userData": "[base64('')]"
             }
-        }
-
-
+        },
+        {
+            "name": "preschool-2/preschool",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2023-03-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "preschool for Linux VM"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', 'preschool-2')]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "https://raw.githubusercontent.com/asquarezone/ARMZone/master/May24/ntier/install.sh"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "sh install.sh"
+                }
+            }
+        },
+        {
+            "name": "preschool-lb",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2023-04-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "preschool-lb"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "dnsSettings": {
+                    "domainNameLabel": "preschool-lb"
+                }
+            }
+        },
+  {
+    "name": "preschool",
+    "type": "Microsoft.Network/loadBalancers",
+    "apiVersion": "2023-04-01",
+    "location": "[resourceGroup().location]",
+    "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', 'preschool-lb')]",
+        "[resourceId('Microsoft.Compute/virtualMachines', 'preschool-1')]",
+        "[resourceId('Microsoft.Compute/virtualMachines', 'preschool-2')]"
+    ],
+    "properties": {
+        "frontendIPConfigurations": [
+            {
+                "name": "loadBalancerFrontEnd1",
+                "properties": {
+                    "publicIPAddress": {
+                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'preschool-lb')]"
+                    }
+                }
+            }
+        ],
+        "backendAddressPools": [
+            {
+                "name": "loadBalancerBackEndPool1"
+            }
+        ],
+        "loadBalancingRules": [
+            {
+                "name": "LBRule1",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', 'preschool', 'loadBalancerFrontEnd1')]"
+                    },
+                    "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'preschool', 'loadBalancerBackEndPool1')]"
+                    },
+                    "protocol": "Tcp",
+                    "frontendPort": 80,
+                    "backendPort": 80,
+                    "enableFloatingIP": false,
+                    "idleTimeoutInMinutes": 5,
+                    "probe": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/probes', 'preschool', 'tcpProbe1')]"
+                    }
+                }
+            }
+        ],
+        "probes": [
+            {
+                "name": "tcpProbe1",
+                "properties": {
+                    "protocol": "Http",
+                    "port": 80,
+                    "intervalInSeconds": 5,
+                    "numberOfProbes": 2,
+                    "requestPath": "/"
+                }
+            }
+        ]
+    }
+  }
     ],
     "outputs": {}
 }
