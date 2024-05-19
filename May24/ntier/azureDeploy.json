@@ -56,7 +56,10 @@
             "copy": {
                 "name": "subnetCopy",
                 "count": "[length(parameters('subnetNames'))]"
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', 'ntier')]"
+            ]
 
         }
     ],
