@@ -1,9 +1,34 @@
 {
-    "AWSTemplateFormatVersion" : "2010-09-09",
-    "Parmeters": {
-        
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "vpcid": {
+            "Description": "-",
+            "Type": "AWS::EC2::VPC::Id"
+        }
     },
     "Resources": {
-
+        "websg": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "opens 80 port",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "vpcid"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "websg"
+                    }
+                ]
+            }
+        }
     }
 }
