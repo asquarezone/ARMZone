@@ -12,6 +12,10 @@
         "ubuntu22ami": {
             "Description": "ubuntu 22 ami",
             "Type": "AWS::EC2::Image::Id"
+        },
+        "subnets": {
+            "Description": "subnets for load balancing",
+            "Type": "List<AWS::EC2::Subnet::Id>"
         }
     },
     "Resources": {
@@ -118,6 +122,104 @@
                         ]
                     }
                 }
+            }
+        },
+        "targets": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "HealthCheckEnabled": true,
+                "HealthCheckIntervalSeconds": 6,
+                "HealthCheckPath": "/",
+                "HealthCheckPort": "80",
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckTimeoutSeconds": 5,
+                "HealthyThresholdCount": 2,
+                "IpAddressType": "ipv4",
+                "Name": "preschool",
+                "Port": 80,
+                "Protocol": "TCP",
+                "TargetType": "instance",
+                "Targets": [
+                    {
+                        "Id": {
+                            "Ref": "preschool1"
+                        },
+                        "Port": 80
+                    },
+                    {
+                        "Id": {
+                            "Ref": "preschool2"
+                        },
+                        "Port": 80
+                    }
+                ],
+                "UnhealthyThresholdCount": 2,
+                "VpcId": {
+                    "Ref": "vpcid"
+                }
+            }
+        },
+        "lb": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "IpAddressType": "ipv4",
+                "Name": "preshool-lb",
+                "Scheme": "internet-facing",
+                "SecurityGroups": [
+                    {
+                        "Ref": "websg"
+                    }
+                ],
+                "Subnets": {
+                    "Ref": "subnets"
+                },
+                "Type": "network"
+            }
+        },
+        "listener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "targets"
+                        },
+                        "Order": 1000
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "lb"
+                },
+                "Port": 80,
+                "Protocol": "TCP"
+            }
+        }
+    },
+    "Outputs": {
+        "lbdns": {
+            "Value": {
+                "Fn::GetAtt": [
+                    "lb",
+                    "DNSName"
+                ]
+            }
+        },
+        "url": {
+            "Value": {
+                "Fn::Join": [
+                    "/",
+                    [
+                        "http:/",
+                        {
+                            "Fn::GetAtt": [
+                                "lb",
+                                "DNSName"
+                            ]
+                        },
+                        "preschool"
+                    ]
+                ]
             }
         }
     }
