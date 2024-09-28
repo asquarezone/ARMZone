@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkcidr": {
+            "type": "string",
+            "metadata": {
+                "description": "network cidr"
+            },
+            "defaultValue": "10.0.0.0/16"
+        },
+        "webcidr": {
+            "type": "string",
+            "metadata": {
+                "description": "web subnet cidr"
+            },
+            "defaultValue": "10.0.0.0/24"
+        },
+        "dbcidr": {
+            "type": "string",
+            "metadata": {
+                "description": "db subnet cidr"
+            },
+            "defaultValue" : "10.0.1.0/24"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "name": "network",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2023-11-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "displayName": "network"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[parameters('networkcidr')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "web",
+                        "properties": {
+                            "addressPrefix": "[parameters('webcidr')]"
+
+                        }
+                    },
+                    {
+                        "name": "db",
+                        "properties": {
+                            "addressPrefix": "[parameters('dbcidr')]"
+
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {}
+}
